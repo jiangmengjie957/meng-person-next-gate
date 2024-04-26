@@ -1,0 +1,6 @@
+.container {
+    height: 100vh;
+    background-image: url("https://api.oick.cn/api/bing");
+    background-size: cover;
+    background-repeat: no-repeat;
+}

@@ -1,0 +1,16 @@
+.footer {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    height: 20px;
+    background-color: #ccc;
+    position: fixed;
+    bottom: 0px;
+  }
+  .copyright {
+    display: flex;
+    align-items: center;
+    background: none;
+    text-align: center;
+    column-gap: 8px;
+  }
