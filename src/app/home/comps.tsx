@@ -6,7 +6,7 @@ import mFetch from "@/utils/fetch";
 const Comps = ({ text }: any) => {
   const [a, v] = useState("");
   // mFetch.get('https://api.oick.cn/api/bing')
-  console.log(text,'text')
+  console.log(text,'text1')
   return <div>{text}</div>;
 };
 
