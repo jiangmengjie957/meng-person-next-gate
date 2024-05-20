@@ -1,11 +1,14 @@
 import { useEffect } from "react"
+import styles from './style.module.css'
+import Image from "next/image"
+import muma from '../../assets/muma.png'
 
 const Header = () => {
-    useEffect(() => {
-        console.log('header')
-    },[])
     return (
-        <div>header</div>
+        <div className={styles.headerContainer}>
+            <Image className={styles.logo} src={muma} alt="muma" />
+            {/* <div className={styles.title}></div> */}
+        </div>
     )
 }
 
