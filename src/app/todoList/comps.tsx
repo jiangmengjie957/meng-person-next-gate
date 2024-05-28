@@ -24,6 +24,7 @@ const Comps = ({ text }: any) => {
   const [database, setDatabase] = useState<any[]>([]);
 
   useEffect(() => {
+    console.log(database, 'database')
     const localDatabase = JSON.parse(localStorage.getItem("todoList") || "[]");
     if(isEmpty(database)) return
     if(!_.isEqual(localDatabase, database)) {
@@ -33,6 +34,7 @@ const Comps = ({ text }: any) => {
 
   useEffect(() => {
     const localDatabase = JSON.parse(localStorage.getItem("todoList") || "[]");
+    console.log(localDatabase,'localDatabase')
     if(isEmpty(localDatabase)) return
     setDatabase(localDatabase)
   },[])
@@ -85,6 +87,7 @@ const Comps = ({ text }: any) => {
           新增
         </Button>
       </div>
+      <div className={styles.list}>
       <List
         style={{
           padding: "0 20px",
@@ -94,7 +97,7 @@ const Comps = ({ text }: any) => {
         renderItem={(item, index) => (
           <List.Item
             actions={[
-              <Button key={index} type="link" onClick={() => onEdit(item.id)}>
+              <Button key={index} type="link" onClick={() => onEdit(item.id)} size="large">
                 编辑
               </Button>,
               <Popconfirm
@@ -104,7 +107,7 @@ const Comps = ({ text }: any) => {
                 okText="确定"
                 cancelText="取消"
               >
-                <Button type="link" danger>
+                <Button type="link" danger  size="large">
                   删除
                 </Button>
               </Popconfirm>,
@@ -113,16 +116,18 @@ const Comps = ({ text }: any) => {
             <List.Item.Meta
               title={
                 <Tooltip title={'创建时间: ' + dayjs(item.timeAt).format('YYYY-MM-DD HH:mm:ss')}>
-                  <span>
+                  <span className={styles.title}>
                     {index + 1}、{item.title}
                   </span>
                 </Tooltip>
               }
-              description={<Tooltip title="点击复制"><span onClick={() => onCopy(item.description)}>{item.description}</span></Tooltip>}
+              description={<Tooltip title="点击复制"><span className={styles.description} onClick={() => onCopy(item.description)}>{item.description}</span></Tooltip>}
             />
           </List.Item>
         )}
       />
+      </div>
+      
       <Modal
         width={800}
         open={formOpen}
