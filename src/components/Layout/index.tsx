@@ -1,11 +1,14 @@
 import Footer from "../Footer";
 import Header from "../Header";
+import styles from './style.module.css'
 
 export default function Layout({ children }: any) {
   return (
     <>
       <Header />
-      <main>{children}</main>
+        <div className={styles.container}>
+          <main>{children}</main>
+        </div>
       <Footer />
     </>
   )

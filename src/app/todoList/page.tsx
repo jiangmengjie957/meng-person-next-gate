@@ -12,7 +12,6 @@ export default async function Home() {
     // })
     // const data = await res.json()
     const data: any = await getRandomSentence()
-    console.log(data,'data')
     // const text: any = await mFetch.get('https://api.oick.cn/api/yiyan')
     
     return <div className="pageContainer">

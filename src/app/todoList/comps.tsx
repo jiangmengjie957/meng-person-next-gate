@@ -15,6 +15,7 @@ import styles from "./page.module.css";
 import { copyToClipboard, guid } from "@/utils";
 import dayjs from "dayjs";
 import _, { isEmpty } from 'lodash'
+import { getChat } from "@/apis/chat";
 
 const Comps = ({ text }: any) => {
   const [formOpen, setFormOpen] = useState(false);
@@ -80,6 +81,13 @@ const Comps = ({ text }: any) => {
   const onCopy = (text?: string) => {
     copyToClipboard(text || '')
   }
+
+  useEffect(() => {
+    getChat({ question: '你好' }).then(res => {
+      console.log(res.json(), 'res')
+    })
+  },[])
+
   return (
     <div>
       <div className={styles.operation}>
@@ -94,7 +102,7 @@ const Comps = ({ text }: any) => {
         }}
         itemLayout="horizontal"
         dataSource={database}
-        renderItem={(item, index) => (
+        renderItem={(item: any, index: any) => (
           <List.Item
             actions={[
               <Button key={index} type="link" onClick={() => onEdit(item.id)} size="large">

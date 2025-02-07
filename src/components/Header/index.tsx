@@ -2,6 +2,7 @@ import { useEffect } from "react"
 import styles from './style.module.css'
 import Image from "next/image"
 import muma from '../../assets/muma.png'
+import baozi from '../../../public/baozi.svg'
 
 const Header = () => {
     return (

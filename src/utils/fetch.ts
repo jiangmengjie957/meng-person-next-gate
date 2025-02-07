@@ -1,4 +1,3 @@
-
 class MFetch {
   constructor() {
     //
@@ -14,6 +13,7 @@ class MFetch {
   ) => {
     const options: RequestInit = {
       method,
+      body: data ? JSON.stringify(data) : null,
       headers: {
         "Content-Type": "application/json",
         ...customOptions.headers,
@@ -26,18 +26,18 @@ class MFetch {
     // }
 
     // const customFetch = () =>
-    console.log(url, options, 'options')
-      return fetch(url, options)
-        .then((response) => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
-          }
-          return response.json();
-        })
-        .catch((error) => {
-          console.error("Fetch error:", error);
-          throw error;
-        });
+    console.log(url, options, "options");
+    return fetch(url, options)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .catch((error) => {
+        console.error("Fetch error:", error);
+        throw error;
+      });
 
     // return Promise.race([
     //   customFetch(),
@@ -54,16 +54,32 @@ class MFetch {
     customOptions: RequestInit = {}
   ) => {
     if (Array.isArray(params)) {
-        console.log(url,'url,')
       for (const val of params) {
         url += `/${val}`;
       }
       params = {};
     }
-    console.log(url,'url')
     return this.nextFetch(url, "GET", null, customOptions);
   };
-}   
+  getStream: any = async (
+    url: string,
+    params?: Record<string, any>,
+  ) => {
+   
+    const streamOptions = {
+      method: "GET",
+      dataType: "text/event-stream",
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    }
+    const response = await fetch(url, streamOptions)
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    return response.body?.getReader();
+  };
+}
 
 const mFetch = new MFetch();
 

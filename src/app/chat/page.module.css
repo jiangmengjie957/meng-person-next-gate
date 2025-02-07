@@ -1,0 +1,368 @@
+.container {
+    width: 100%;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f6f9ff 0%, #f1f5ff 100%);
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 24px 0;
+}
+
+.assistant {
+    background-color: #fff;
+    border-radius: 12px;
+    max-width: 85%;
+    padding: 12px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    margin: 12px 0;
+    line-height: 1.6;
+}
+
+/* 修改AI回复loading状态的样式 */
+.assistantLoading {
+    position: relative;
+    background: linear-gradient(90deg, #f0f7ff 25%, #e6f0ff 50%, #f0f7ff 75%);
+    background-size: 200% 100%;
+    animation: loading 2s infinite;
+    min-height: 60px;
+    display: flex;
+    align-items: flex-start;
+    padding-left: 72px; /* 为loading图标预留空间 */
+}
+
+.assistantLoading::before {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 20px; /* 调整垂直位置 */
+    width: 36px;
+    height: 16px;
+    background: linear-gradient(90deg,
+        #1677ff 0%, #1677ff 25%,
+        transparent 25%, transparent 50%,
+        #1677ff 50%, #1677ff 75%,
+        transparent 75%, transparent 100%);
+    background-size: 16px 100%;
+    animation: dots 1s infinite linear;
+    border-radius: 4px;
+}
+
+/* 添加文字样式 */
+.assistantLoading > div {
+    padding-top: 16px;
+    width: 100%;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+@keyframes dots {
+    0% {
+        background-position: 16px 0;
+    }
+    100% {
+        background-position: 0 0;
+    }
+}
+
+.user {
+    width: 100%;
+    display: flex;
+    justify-content: flex-end;
+    padding: 12px 24px;
+}
+
+.userContent {
+    background-color: #1677ff;
+    color: #fff;
+    border-radius: 12px;
+    max-width: 85%;
+    padding: 12px 24px;
+    box-shadow: 0 2px 8px rgba(22, 119, 255, 0.1);
+}
+
+.chatroom {
+    display: flex;
+    width: 800px;
+    max-width: 90%;
+    height: calc(100vh - 48px);
+    margin: 0 auto;
+    padding: 32px;
+    justify-content: flex-start;
+    flex-direction: column;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 24px;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.08);
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding-bottom: 16px;
+    scroll-behavior: smooth;
+    display: flex;
+    flex-direction: column;
+    /* 隐藏滚动条但保持功能 */
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* IE and Edge */
+}
+
+/* Webkit browsers (Chrome, Safari) */
+.content::-webkit-scrollbar {
+    display: none;
+}
+
+.empty {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    flex: 1;
+    padding: 0 20px;
+}
+
+.title {
+    font-size: 32px;
+    font-weight: 600;
+    text-align: center;
+    width: 100%;
+    margin-bottom: 12px;
+    background: linear-gradient(120deg, #1677ff, #36a1ff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.subtitle {
+    text-align: center;
+    color: #666;
+    font-size: 15px;
+    margin-bottom: 40px;
+}
+
+.features {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+    margin-bottom: 40px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.feature {
+    display: flex;
+    align-items: flex-start;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.8);
+    border-radius: 16px;
+    border: 1px solid rgba(22, 119, 255, 0.1);
+}
+
+.featureIcon {
+    width: 32px;
+    height: 32px;
+    margin-right: 12px;
+    color: #1677ff;
+}
+
+.featureText {
+    flex: 1;
+}
+
+.featureTitle {
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.featureDesc {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+}
+
+.inputBox {
+    display: flex;
+    justify-content: space-between;
+    column-gap: 16px;
+    padding: 16px;
+    background: #f8faff;
+    border-radius: 12px;
+    margin-bottom: 24px;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+/* 空状态下的输入框样式 */
+.empty + .inputBox {
+    position: relative;
+    width: 90%;
+    max-width: 600px;
+    padding: 8px;
+    background: #fff;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    border-radius: 100px;
+    margin: 0 auto;
+    border: 1px solid rgba(22, 119, 255, 0.1);
+}
+
+.empty + .inputBox input {
+    font-size: 16px;
+    padding: 12px 24px;
+    height: 48px;
+    border: none;
+    background: transparent;
+}
+
+.empty + .inputBox input:focus {
+    box-shadow: none;
+}
+
+.empty + .inputBox button {
+    padding: 0 32px;
+    height: 48px;
+    font-size: 16px;
+    border-radius: 24px;
+    margin-right: 4px;
+    background: linear-gradient(120deg, #1677ff, #36a1ff);
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.empty + .inputBox button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(22, 119, 255, 0.2);
+}
+
+.inputBox.fixed {
+    position: sticky;
+    bottom: 0;
+    margin-top: auto;
+    margin-bottom: 0;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05);
+    width: 100%;
+    background: #fff;
+}
+
+/* 调整消息列表样式 */
+.msgList {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    padding: 0 16px;
+}
+
+/* 移动端适配 */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0;
+    }
+
+    .chatroom {
+        width: 100%;
+        max-width: 100%;
+        height: 100vh;
+        padding: 16px;
+        border-radius: 0;
+    }
+
+    .title {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+        margin-bottom: 24px;
+    }
+
+    .features {
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 0 8px;
+    }
+
+    .feature {
+        padding: 12px;
+    }
+
+    .featureDesc {
+        font-size: 12px;
+    }
+
+    .assistant, .userContent {
+        max-width: 90%;
+        padding: 10px 16px;
+        font-size: 14px;
+    }
+
+    .user {
+        padding: 8px 16px;
+    }
+
+    .msgList {
+        padding: 0 8px;
+    }
+
+    .inputBox {
+        padding: 12px;
+        column-gap: 8px;
+    }
+
+    .empty + .inputBox {
+        width: 100%;
+        padding: 6px;
+    }
+
+    .empty + .inputBox input {
+        font-size: 14px;
+        padding: 8px 16px;
+        height: 40px;
+    }
+
+    .empty + .inputBox button {
+        padding: 0 20px;
+        height: 40px;
+        font-size: 14px;
+    }
+
+    /* 代码块样式调整 */
+    .assistant pre,
+    .userContent pre {
+        max-width: 100%;
+        overflow-x: auto;
+        font-size: 12px;
+        padding: 12px !important;
+    }
+}
+
+/* 小屏幕手机适配 */
+@media screen and (max-width: 375px) {
+    .chatroom {
+        padding: 12px;
+    }
+
+    .title {
+        font-size: 20px;
+    }
+
+    .subtitle {
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    .assistant, .userContent {
+        max-width: 95%;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+}
