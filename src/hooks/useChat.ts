@@ -89,10 +89,22 @@ export const useGpt = (key?: string, history: boolean = false) => {
         if(!gpt.current) return
         gpt.current.stream(prompt, history ? msgList.current : undefined)
     }
+
+    // 添加清除历史记录的方法
+    const clearHistory = () => {
+        msgList.current = []
+        setStreamingText('')
+        if (typeof window !== 'undefined') {
+            localStorage.removeItem(STORAGE_KEY)
+        }
+        forceUpdate({})
+    }
+
     return {
         streamingText,
         streaming: streaming,
         msgList: msgList.current,
         stream,
+        clearHistory, // 导出清除方法
     }
 }

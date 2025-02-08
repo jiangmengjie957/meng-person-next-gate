@@ -123,7 +123,7 @@ const Comps = ({ text }: any) => {
           >
             <List.Item.Meta
               title={
-                <Tooltip title={'创建时间: ' + dayjs(item.timeAt).format('YYYY-MM-DD HH:mm:ss')}>
+                <Tooltip title={'创建时间: ' + dayjs(item.createAt).format('YYYY-MM-DD HH:mm:ss')}>
                   <span className={styles.title}>
                     {index + 1}、{item.title}
                   </span>

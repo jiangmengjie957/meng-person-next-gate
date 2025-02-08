@@ -1,5 +1,5 @@
 'use client'
-import { Button, Input } from 'antd'
+import { Button, Input, Popconfirm } from 'antd'
 import { useGpt } from '@/hooks/useChat'
 import { useState, useRef, useEffect } from 'react'
 import MsgList from './MsgList'
@@ -8,11 +8,12 @@ import {
     MessageOutlined, 
     RobotOutlined,
     ThunderboltOutlined,
-    SafetyOutlined 
+    SafetyOutlined,
+    DeleteOutlined 
 } from '@ant-design/icons'
 
 const Chatroom = () => {
-    const { streamingText, stream, streaming, msgList } = useGpt('', true)
+    const { streamingText, stream, streaming, msgList, clearHistory } = useGpt('', true)
     const [question, setQuestion] = useState('')
     const contentRef = useRef<HTMLDivElement>(null)
 
@@ -60,9 +61,30 @@ const Chatroom = () => {
 
     return (
         <div className={styles.chatroom}>
-            <div className={styles.title}>你好，我是小小梦</div>
-            <div className={styles.subtitle}>
-                让我来帮你解答问题，探索新知识
+            <div className={styles.titleContainer}>
+                <div>
+                    <div className={styles.title}>你好，我是小小梦</div>
+                    <div className={styles.subtitle}>
+                        让我来帮你解答问题，探索新知识
+                    </div>
+                </div>
+                {hasMessages && (
+                    <Popconfirm
+                        title="确认清除历史记录？"
+                        description="清除后将无法恢复"
+                        onConfirm={clearHistory}
+                        okText="确定"
+                        cancelText="取消"
+                    >
+                        <Button 
+                            icon={<DeleteOutlined />}
+                            danger
+                            className={styles.clearButton}
+                        >
+                            清除记录
+                        </Button>
+                    </Popconfirm>
+                )}
             </div>
             <div 
                 ref={contentRef}

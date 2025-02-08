@@ -366,3 +366,14 @@
         font-size: 13px;
     }
 }
+
+.titleContainer {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 20px;
+}
+
+.clearButton {
+    margin-top: 8px;
+}
