@@ -5,7 +5,7 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
 // @ts-ignore
 import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import 'highlight.js/styles/atom-one-dark-reasonable.css'
-import { GptMsgs } from '@/serivice/streamGpt'
+import { GptMsgs } from '@/service/streamGpt'
 
 import styles from '../page.module.css'
 

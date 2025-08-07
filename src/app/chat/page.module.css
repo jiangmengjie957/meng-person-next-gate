@@ -305,6 +305,28 @@
         font-size: 14px;
     }
 
+    .assistant ul,.assistant ol {
+        padding-left: 1.5em;
+        margin: .859em 0 0;
+        font-size: 14px;
+    }
+    
+    .assistant ul p,.assistant ul .paragraph,.assistant ol p,.assistant ol .paragraph {
+        overflow: visible
+    }
+    
+    .assistant ul li,.assistant ol li {
+        line-height: 24px;
+        letter-spacing: .25px;
+    }
+    
+    .assistant ol ul,.assistant ol ol,.assistant ul ul,.assistant ul ol {
+        font-weight: 400;
+        padding-left: 1em;
+        margin-bottom: .859em
+    }
+
+
     .user {
         padding: 8px 16px;
     }

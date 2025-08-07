@@ -1,5 +1,5 @@
-import { GptMsgs, StreamGpt } from '@/serivice/streamGpt'
-import { Typewriter } from '@/serivice/typewriter'
+import { GptMsgs, StreamGpt } from '@/service/streamGpt'
+import { Typewriter } from '@/service/typewriter'
 import { message } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 

@@ -66,3 +66,17 @@ export const postStream = (url: string, body?: Record<string, any>) => {
     return response/* .json(); */
   });
 };
+
+export const post = (url: string, body?: Record<string, any>) => {
+  return baseFetch(url, { method: "post", body }).then((response) => {
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+    return response.json();
+  }).catch((error) => {
+    console.error('Post request error:', error);
+    throw error;
+  });
+};

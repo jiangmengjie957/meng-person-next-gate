@@ -6,35 +6,250 @@
  
 }
 .list {
-  border: 1px solid #ccc;
   width: 88vw;
   margin: 0 auto;
   margin-top: 12px;
-  border-radius: 28px;
   position: relative;
-  background-color: rgba(255, 255, 255, 0.5);
-  overflow: hidden;
   z-index: 10;
-  
 }
-.list:before {
-  content: "";
+.title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #1f2937;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 4px 8px;
+  border-radius: 6px;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 260px;
+}
+
+.title:hover {
+  color: #6366f1;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.description {
+  font-size: 14px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+  display: inline-block;
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.description:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  color: #1f2937;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.configText {
+  font-size: 13px;
+  color: #6b7280;
+  cursor: default;
+  padding: 6px 8px;
+  border-radius: 6px;
+  display: block;
+  max-width: 130px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.ellipsisText {
+  font-size: 14px;
+  color: #374151;
+  display: inline-block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.timeText {
+  font-size: 13px;
+  color: #374151;
+  font-family: monospace;
+  white-space: nowrap;
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: rgba(243, 244, 246, 0.5);
+}
+
+.beautifulTable {
+  background: #fff;
+  border-radius: 16px !important;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1) !important;
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  overflow: hidden !important;
+  width: 100% !important;
+  margin: 0 !important;
+}
+
+.beautifulTable .ant-table {
+  background: transparent !important;
+}
+
+.beautifulTable .ant-table-container {
+  background: transparent !important;
+  border-radius: 16px !important;
+  width: 100% !important;
+}
+
+.beautifulTable .ant-table-content {
+  background: transparent !important;
+}
+
+/* 表头样式 */
+.beautifulTable .ant-table-thead > tr > th {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.1), rgba(129, 140, 248, 0.1)) !important;
+  border: none !important;
+  border-bottom: 2px solid rgba(74, 144, 226, 0.2) !important;
+  color: #1f2937 !important;
+  font-weight: 600 !important;
+  font-size: 14px !important;
+  padding: 16px 20px !important;
+  position: relative !important;
+}
+
+.beautifulTable .ant-table-thead > tr > th::before {
+  content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background-image: url("https://api.oick.cn/api/bing");
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  background-size: cover;
-  filter: blur(30px);
-  z-index: -1;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.05), rgba(139, 92, 246, 0.05));
+  border-radius: 8px;
+  margin: 4px;
 }
-.title {
-  font-size: 18px;
-  font-weight: 500;
+
+/* 表格行样式 */
+.beautifulTable .ant-table-tbody > tr > td {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(226, 232, 240, 0.5) !important;
+  padding: 16px 20px !important;
+  color: #374151 !important;
+  font-size: 14px !important;
+  transition: all 0.3s ease !important;
 }
-.description {
-  font-size: 16px;
+
+.beautifulTable .ant-table-tbody > tr {
+  transition: all 0.3s ease !important;
+}
+
+.beautifulTable .ant-table-tbody > tr:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(139, 92, 246, 0.08)) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
+}
+
+.beautifulTable .ant-table-tbody > tr:hover > td {
+  background: transparent !important;
+  color: #1f2937 !important;
+}
+
+/* 斑马纹效果 */
+.beautifulTable .ant-table-tbody > tr:nth-child(even) {
+  background: rgba(248, 250, 252, 0.3) !important;
+}
+
+.beautifulTable .ant-table-tbody > tr:nth-child(odd) {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* 分页样式 */
+.beautifulTable .ant-pagination {
+  background: transparent !important;
+  margin: 16px 0 !important;
+  text-align: center !important;
+}
+
+.beautifulTable .ant-pagination .ant-pagination-item {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.beautifulTable .ant-pagination .ant-pagination-item:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+.beautifulTable .ant-pagination .ant-pagination-item-active {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6) !important;
+  border-color: #6366f1 !important;
+}
+
+.beautifulTable .ant-pagination .ant-pagination-item-active a {
+  color: white !important;
+}
+
+/* 分页器其他元素样式 */
+.beautifulTable .ant-pagination .ant-pagination-prev,
+.beautifulTable .ant-pagination .ant-pagination-next,
+.beautifulTable .ant-pagination .ant-pagination-jump-prev,
+.beautifulTable .ant-pagination .ant-pagination-jump-next {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  border-radius: 8px !important;
+  transition: all 0.3s ease !important;
+}
+
+.beautifulTable .ant-pagination .ant-pagination-prev:hover,
+.beautifulTable .ant-pagination .ant-pagination-next:hover,
+.beautifulTable .ant-pagination .ant-pagination-jump-prev:hover,
+.beautifulTable .ant-pagination .ant-pagination-jump-next:hover {
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)) !important;
+  border-color: rgba(99, 102, 241, 0.5) !important;
+  transform: translateY(-1px) !important;
+}
+
+.beautifulTable .ant-pagination .ant-pagination-options {
+  margin-left: 16px !important;
+}
+
+.beautifulTable .ant-pagination .ant-select-selector {
+  background: rgba(255, 255, 255, 0.8) !important;
+  border: 1px solid rgba(99, 102, 241, 0.2) !important;
+  border-radius: 8px !important;
+}
+
+/* 隐藏水平滚动条但保留滚动功能 */
+.beautifulTable .ant-table-container .ant-table-body {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+.beautifulTable .ant-table-container .ant-table-body::-webkit-scrollbar {
+  display: none !important; /* Safari and Chrome */
+}
+
+.beautifulTable .ant-table-container {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE and Edge */
+}
+
+.beautifulTable .ant-table-container::-webkit-scrollbar {
+  display: none !important; /* Safari and Chrome */
 }
