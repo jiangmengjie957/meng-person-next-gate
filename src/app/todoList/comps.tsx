@@ -26,6 +26,18 @@ import { getBranch } from "@/service/getBranch";
 // 确保dayjs使用中文
 dayjs.locale('zh-cn');
 
+// 安全的localStorage访问函数
+const safeLocalStorage = {
+  getItem: (key: string) => {
+    if (typeof window === 'undefined') return null;
+    return localStorage.getItem(key);
+  },
+  setItem: (key: string, value: string) => {
+    if (typeof window === 'undefined') return;
+    localStorage.setItem(key, value);
+  }
+};
+
 const Comps = ({ text }: any) => {
   const [formOpen, setFormOpen] = useState(false);
   const [type, setType] = useState("");
@@ -41,15 +53,15 @@ const Comps = ({ text }: any) => {
   const [newPort, setNewPort] = useState('');
 
   useEffect(() => {
-    const localDatabase = JSON.parse(localStorage.getItem("todoList") || "[]");
+    const localDatabase = JSON.parse(safeLocalStorage.getItem("todoList") || "[]");
     if(isEmpty(database)) return
     if(!_.isEqual(localDatabase, database)) {
-      localStorage.setItem("todoList", JSON.stringify(database))
+      safeLocalStorage.setItem("todoList", JSON.stringify(database))
     }
   },[database])
 
   useEffect(() => {
-    const localDatabase = JSON.parse(localStorage.getItem("todoList") || "[]");
+    const localDatabase = JSON.parse(safeLocalStorage.getItem("todoList") || "[]");
     if(isEmpty(localDatabase)) return
     setDatabase(localDatabase)
   },[])
@@ -129,7 +141,7 @@ const Comps = ({ text }: any) => {
 
   const onConfig = () => {
     // 读取本地配置并回显
-    const localConfig = JSON.parse(localStorage.getItem("todoConfig") || "{}");
+    const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
     const ports = localConfig.portList || [];
     
     configForm.setFieldsValue({
@@ -146,7 +158,7 @@ const Comps = ({ text }: any) => {
       portList: portList
     };
     // 保存到本地存储
-    localStorage.setItem("todoConfig", JSON.stringify(configData));
+    safeLocalStorage.setItem("todoConfig", JSON.stringify(configData));
     setConfigOpen(false);
     message.success("配置保存成功");
   };
@@ -174,9 +186,9 @@ const Comps = ({ text }: any) => {
     setGeneratingBranch(true);
     try {
       // 获取配置中的分支格式
-      const localConfig = JSON.parse(localStorage.getItem("todoConfig") || "{}");
-      const branchFormat = localConfig.branchFormat || "feature-xxx-xxx";
-      const customPrompt = localConfig.customPrompt || "";
+          const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
+    const branchFormat = localConfig.branchFormat || "feature-xxx-xxx";
+    const customPrompt = localConfig.customPrompt || "";
       const branchName = await getBranch(title, {
         branchFormat,
         customPrompt
@@ -368,7 +380,7 @@ const Comps = ({ text }: any) => {
       key: 'releasePort',
       width: 100,
       filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => {
-        const localConfig = JSON.parse(localStorage.getItem("todoConfig") || "{}");
+        const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
         const portList = localConfig.portList || ["3000", "8080", "9000"];
         
         return (
@@ -671,7 +683,7 @@ const Comps = ({ text }: any) => {
               }}
             >
               {(() => {
-                const localConfig = JSON.parse(localStorage.getItem("todoConfig") || "{}");
+                const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
                 const ports = localConfig.portList || [];
                 return ports.map((port: string) => (
                   <Select.Option key={port} value={port}>
