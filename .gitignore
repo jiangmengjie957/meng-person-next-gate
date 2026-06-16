@@ -10,8 +10,13 @@
 /coverage
 
 # next.js
-/.next/
-/out/
+# /.next/
+# /out/
+
+# vite
+dist
+dist-ssr
+*.local
 
 # production
 /build
@@ -33,4 +38,4 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
-next-env.d.ts
+# next-env.d.ts

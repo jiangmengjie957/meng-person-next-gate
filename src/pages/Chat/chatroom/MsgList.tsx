@@ -1,4 +1,3 @@
-'use client'
 import ReactMarkdown from 'react-markdown'
 // @ts-ignore
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter'
@@ -7,7 +6,7 @@ import { tomorrow } from 'react-syntax-highlighter/dist/esm/styles/prism'
 import 'highlight.js/styles/atom-one-dark-reasonable.css'
 import { GptMsgs } from '@/service/streamGpt'
 
-import styles from '../page.module.css'
+import styles from '../index.module.css'
 
 interface IMsgListProps {
     msgList?: GptMsgs
@@ -29,9 +28,9 @@ const MsgList = ({ msgList = [], streamingText, streaming }: IMsgListProps) => {
                                     code({node, inline, className, children, ...props}) {
                                         const match = /language-(\w+)/.exec(className || '')
                                         return !inline && match ? (
+                                            // @ts-ignore
                                             <SyntaxHighlighter
                                                 {...props}
-                                                // eslint-disable-next-line react/no-children-prop
                                                 children={String(children).replace(/\n$/, '')}
                                                 style={tomorrow}
                                                 language={match[1]}
@@ -62,9 +61,9 @@ const MsgList = ({ msgList = [], streamingText, streaming }: IMsgListProps) => {
                                 code({node, inline, className, children, ...props}) {
                                     const match = /language-(\w+)/.exec(className || '')
                                     return !inline && match ? (
+                                        // @ts-ignore
                                         <SyntaxHighlighter
                                             {...props}
-                                            // eslint-disable-next-line react/no-children-prop
                                             children={String(children).replace(/\n$/, '')}
                                             style={tomorrow}
                                             language={match[1]}

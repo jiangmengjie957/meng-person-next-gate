@@ -1,10 +1,9 @@
-"use client"
 import { useEffect, useState } from "react";
-import styles from "./page.module.css";
+import styles from "./index.module.css";
 import Footer from "@/components/Footer";
 import dayjs from "dayjs";
 
-export default function Home() {
+export default function Root() {
   const [a, b] = useState('123');
   const [startTime, setStartTime] = useState('');
   useEffect(() => {

@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import {
   Button,
@@ -16,7 +14,7 @@ import {
   Space,
 } from "antd";
 import { BulbOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
-import styles from "./page.module.css";
+import styles from "./index.module.css";
 import { copyToClipboard, guid } from "@/utils";
 import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";

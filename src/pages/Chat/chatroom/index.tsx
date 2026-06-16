@@ -1,9 +1,8 @@
-'use client'
 import { Button, Input, Popconfirm } from 'antd'
 import { useGpt } from '@/hooks/useChat'
 import { useState, useRef, useEffect } from 'react'
 import MsgList from './MsgList'
-import styles from '../page.module.css'
+import styles from '../index.module.css'
 import { 
     MessageOutlined, 
     RobotOutlined,
