@@ -62,7 +62,7 @@ const Chatroom = () => {
         <div className={styles.chatroom}>
             <div className={styles.titleContainer}>
                 <div>
-                    <div className={styles.title}>你好，我是你的AI助手</div>
+                    <div className={styles.title}>你好，我是你的AI助手小梦</div>
                     <div className={styles.subtitle}>
                         让我来帮你解答问题，探索新知识
                     </div>
