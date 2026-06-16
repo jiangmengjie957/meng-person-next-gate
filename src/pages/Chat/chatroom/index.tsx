@@ -3,12 +3,12 @@ import { useGpt } from '@/hooks/useChat'
 import { useState, useRef, useEffect } from 'react'
 import MsgList from './MsgList'
 import styles from '../index.module.css'
-import { 
-    MessageOutlined, 
+import {
+    MessageOutlined,
     RobotOutlined,
     ThunderboltOutlined,
     SafetyOutlined,
-    DeleteOutlined 
+    DeleteOutlined
 } from '@ant-design/icons'
 
 const Chatroom = () => {
@@ -62,7 +62,7 @@ const Chatroom = () => {
         <div className={styles.chatroom}>
             <div className={styles.titleContainer}>
                 <div>
-                    <div className={styles.title}>你好，我是小小梦</div>
+                    <div className={styles.title}>你好，我是你的AI助手</div>
                     <div className={styles.subtitle}>
                         让我来帮你解答问题，探索新知识
                     </div>
@@ -75,7 +75,7 @@ const Chatroom = () => {
                         okText="确定"
                         cancelText="取消"
                     >
-                        <Button 
+                        <Button
                             icon={<DeleteOutlined />}
                             danger
                             className={styles.clearButton}
@@ -85,7 +85,7 @@ const Chatroom = () => {
                     </Popconfirm>
                 )}
             </div>
-            <div 
+            <div
                 ref={contentRef}
                 className={`${styles.content} ${hasMessages ? '' : styles.empty}`}
             >
