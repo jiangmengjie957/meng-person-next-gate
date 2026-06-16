@@ -20,6 +20,7 @@ import dayjs from "dayjs";
 import "dayjs/locale/zh-cn";
 import _, { isEmpty } from 'lodash'
 import { getBranch } from "@/service/getBranch";
+import { getModels } from "@/apis/chat";
 
 // 确保dayjs使用中文
 dayjs.locale('zh-cn');
@@ -49,6 +50,9 @@ const Comps = ({ text }: any) => {
   const [generatingBranch, setGeneratingBranch] = useState(false);
   const [portList, setPortList] = useState<string[]>([]);
   const [newPort, setNewPort] = useState('');
+  const [modelList, setModelList] = useState<Array<{ id: string; description: string }>>([]);
+  const [selectedModel, setSelectedModel] = useState<string>('');
+  const [loadingModels, setLoadingModels] = useState(false);
 
   useEffect(() => {
     const localDatabase = JSON.parse(safeLocalStorage.getItem("todoList") || "[]");
@@ -141,19 +145,38 @@ const Comps = ({ text }: any) => {
     // 读取本地配置并回显
     const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
     const ports = localConfig.portList || [];
-    
+
     configForm.setFieldsValue({
       branchFormat: localConfig.branchFormat || "feature-xxx-xxx",
       customPrompt: localConfig.customPrompt || "",
     });
     setPortList(ports);
+    setSelectedModel(localConfig.model || '');
+
+    // 先打开弹窗
     setConfigOpen(true);
+
+    // 异步拉取模型列表
+    setLoadingModels(true);
+    getModels()
+      .then((res) => {
+        if (res.code === 200 && res.data?.models) {
+          setModelList(res.data.models);
+        }
+      })
+      .catch(() => {
+        // 拉取失败不影响配置弹窗正常使用
+      })
+      .finally(() => {
+        setLoadingModels(false);
+      });
   };
 
   const onConfigSave = () => {
     const configData = {
       ...configForm.getFieldsValue(),
-      portList: portList
+      portList: portList,
+      ...(selectedModel ? { model: selectedModel } : {}),
     };
     // 保存到本地存储
     safeLocalStorage.setItem("todoConfig", JSON.stringify(configData));
@@ -184,12 +207,14 @@ const Comps = ({ text }: any) => {
     setGeneratingBranch(true);
     try {
       // 获取配置中的分支格式
-          const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
-    const branchFormat = localConfig.branchFormat || "feature-xxx-xxx";
-    const customPrompt = localConfig.customPrompt || "";
+      const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
+      const branchFormat = localConfig.branchFormat || "feature-xxx-xxx";
+      const customPrompt = localConfig.customPrompt || "";
+      const model = localConfig.model || undefined;
       const branchName = await getBranch(title, {
         branchFormat,
-        customPrompt
+        customPrompt,
+        model,
       });
       if (branchName) {
         form.setFieldValue('description', branchName);
@@ -720,14 +745,34 @@ const Comps = ({ text }: any) => {
             <Input placeholder="请输入分支格式，如：feature-xxx-xxx" />
           </Form.Item>
           <Form.Item name="customPrompt" label="自定义Prompt">
-            <Input.TextArea 
-              placeholder="请输入ai生成分支名自定义Prompt内容" 
+            <Input.TextArea
+              placeholder="请输入ai生成分支名自定义Prompt内容"
               rows={6}
               maxLength={1000}
               showCount
             />
           </Form.Item>
-          
+
+          <Form.Item label="AI模型选择">
+            <Select
+              placeholder="默认使用服务端配置的模型"
+              value={selectedModel || undefined}
+              onChange={(val) => setSelectedModel(val || '')}
+              allowClear
+              loading={loadingModels}
+              disabled={loadingModels}
+              notFoundContent={loadingModels ? '加载中...' : '暂无模型'}
+              style={{ width: '100%' }}
+            >
+              {modelList.map((m) => (
+                <Select.Option key={m.id} value={m.id}>
+                  {m.id}
+                  {m.description ? <span style={{ color: '#999', marginLeft: 8, fontSize: 12 }}>{m.description}</span> : null}
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
           <Form.Item label="发布端口管理">
             <div style={{ marginBottom: 16 }}>
               <Space.Compact style={{ display: 'flex' }}>

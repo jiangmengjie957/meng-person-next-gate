@@ -4,11 +4,12 @@ import { CustomPromptProps } from "@/type/prompt";
 import { message } from "antd";
 
 export const getBranch = async (question: string, params: CustomPromptProps) => {
-const { branchFormat = 'feature-xxx-xxx', customPrompt } = params
+const { branchFormat = 'feature-xxx-xxx', customPrompt, model } = params
   const res = await getAnswer({
     isSingleChat: true,
     systemPrompt: defaultPromptWithCustom({ branchFormat, customPrompt }),
-    question
+    question,
+    ...(model ? { model } : {}),
   })
   if (res.code === 200) {
     return res.data?.result || ''
