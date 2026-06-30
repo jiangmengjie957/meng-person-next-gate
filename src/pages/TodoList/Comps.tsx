@@ -13,7 +13,7 @@ import {
   Tag,
   Space,
 } from "antd";
-import { BulbOutlined, PlusOutlined, DeleteOutlined, HolderOutlined } from "@ant-design/icons";
+import { BulbOutlined, PlusOutlined, DeleteOutlined, HolderOutlined, LinkOutlined } from "@ant-design/icons";
 import styles from "./index.module.css";
 import { copyToClipboard, guid } from "@/utils";
 import dayjs from "dayjs";
@@ -72,6 +72,11 @@ const Comps = ({ text }: any) => {
   const [loadingModels, setLoadingModels] = useState(false);
   const [columnOrder, setColumnOrder] = useState<string[]>([]);
   const [columnConfigOpen, setColumnConfigOpen] = useState(false);
+  const [customColumns, setCustomColumns] = useState<Array<{ key: string; title: string }>>([]);
+  const [newColumnTitle, setNewColumnTitle] = useState('');
+  const [editingCell, setEditingCell] = useState<{ recordId: string; columnKey: string } | null>(null);
+  const [editingValue, setEditingValue] = useState('');
+  const [clickTimer, setClickTimer] = useState<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     const localDatabase = JSON.parse(safeLocalStorage.getItem("todoList") || "[]");
@@ -251,6 +256,8 @@ const Comps = ({ text }: any) => {
     // 读取列顺序配置
     const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
     const savedColumnOrder = localConfig.columnOrder || [];
+    const savedCustomColumns = localConfig.customColumns || [];
+
     if (savedColumnOrder.length > 0) {
       setColumnOrder(savedColumnOrder);
     } else {
@@ -258,18 +265,106 @@ const Comps = ({ text }: any) => {
       const defaultOrder = ['index', 'title', 'description', 'releaseDate', 'releaseStatus', 'releasePort', 'preReleaseConfig', 'createAt'];
       setColumnOrder(defaultOrder);
     }
+
+    setCustomColumns(savedCustomColumns);
     setColumnConfigOpen(true);
   };
 
   const onColumnConfigSave = () => {
     // 读取现有配置
     const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
-    // 更新列顺序
+    // 更新列顺序和自定义列
     localConfig.columnOrder = columnOrder;
+    localConfig.customColumns = customColumns;
     // 保存回localStorage
     safeLocalStorage.setItem("todoConfig", JSON.stringify(localConfig));
     setColumnConfigOpen(false);
     message.success("列顺序配置保存成功");
+  };
+
+  const addCustomColumn = () => {
+    if (!newColumnTitle.trim()) {
+      message.warning("请输入列名称");
+      return;
+    }
+
+    const columnKey = `custom_${guid()}`;
+    const newColumn = { key: columnKey, title: newColumnTitle.trim() };
+
+    const updatedCustomColumns = [...customColumns, newColumn];
+    const updatedColumnOrder = [...columnOrder, columnKey];
+
+    setCustomColumns(updatedCustomColumns);
+    setColumnOrder(updatedColumnOrder);
+    setNewColumnTitle('');
+
+    // 立即保存到 localStorage
+    const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
+    localConfig.columnOrder = updatedColumnOrder;
+    localConfig.customColumns = updatedCustomColumns;
+    safeLocalStorage.setItem("todoConfig", JSON.stringify(localConfig));
+
+    message.success("自定义列添加成功");
+  };
+
+  const removeCustomColumn = (columnKey: string) => {
+    const updatedCustomColumns = customColumns.filter(col => col.key !== columnKey);
+    const updatedColumnOrder = columnOrder.filter(key => key !== columnKey);
+
+    setCustomColumns(updatedCustomColumns);
+    setColumnOrder(updatedColumnOrder);
+
+    // 立即保存到 localStorage
+    const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
+    localConfig.columnOrder = updatedColumnOrder;
+    localConfig.customColumns = updatedCustomColumns;
+    safeLocalStorage.setItem("todoConfig", JSON.stringify(localConfig));
+
+    message.success("自定义列删除成功");
+  };
+
+  const startEditing = (recordId: string, columnKey: string, currentValue: string) => {
+    setEditingCell({ recordId, columnKey });
+    setEditingValue(currentValue || '');
+  };
+
+  const saveEditing = () => {
+    if (editingCell) {
+      setDatabase((data) =>
+        data.map((item) =>
+          item.id === editingCell.recordId
+            ? { ...item, [editingCell.columnKey]: editingValue }
+            : item
+        )
+      );
+      setEditingCell(null);
+      setEditingValue('');
+    }
+  };
+
+  const cancelEditing = () => {
+    setEditingCell(null);
+    setEditingValue('');
+  };
+
+  const handleCellClick = (e: React.MouseEvent, text: string, recordId: string, columnKey: string) => {
+    e.stopPropagation();
+
+    if (clickTimer) {
+      // 双击 - 取消单击定时器，进入编辑
+      clearTimeout(clickTimer);
+      setClickTimer(null);
+      startEditing(recordId, columnKey, text);
+    } else {
+      // 单击 - 延迟200ms执行复制
+      const timer = setTimeout(() => {
+        if (text) {
+          copyToClipboard(text); // copyToClipboard 内部已经有提示，不需要再加
+        }
+        setClickTimer(null);
+      }, 200);
+      setClickTimer(timer);
+    }
   };
 
   const getColumnTitle = (key: string) => {
@@ -283,6 +378,13 @@ const Comps = ({ text }: any) => {
       preReleaseConfig: '发布前配置',
       createAt: '创建时间',
     };
+
+    // 如果是自定义列，从 customColumns 中查找
+    if (key.startsWith('custom_')) {
+      const customCol = customColumns.find(col => col.key === key);
+      return customCol ? customCol.title : key;
+    }
+
     return titleMap[key] || key;
   };
 
@@ -325,6 +427,12 @@ const Comps = ({ text }: any) => {
     }
     // 默认顺序
     return ['index', 'title', 'description', 'releaseDate', 'releaseStatus', 'releasePort', 'preReleaseConfig', 'createAt'];
+  };
+
+  // 获取自定义列配置
+  const getCustomColumns = () => {
+    const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
+    return localConfig.customColumns || [];
   };
 
   // 定义所有列的配置
@@ -752,9 +860,99 @@ const Comps = ({ text }: any) => {
     },
   };
 
+  // 动态生成自定义列配置
+  const customColumnsConfig = getCustomColumns().reduce((acc: Record<string, any>, col: { key: string; title: string }) => {
+    acc[col.key] = {
+      title: col.title,
+      dataIndex: col.key,
+      key: col.key,
+      width: 200,
+      render: (text: string, record: any) => {
+        const isEditing = editingCell?.recordId === record.id && editingCell?.columnKey === col.key;
+
+        if (isEditing) {
+          return (
+            <Input
+              value={editingValue}
+              onChange={(e) => setEditingValue(e.target.value)}
+              onPressEnter={saveEditing}
+              onBlur={saveEditing}
+              autoFocus
+              style={{ width: '100%' }}
+            />
+          );
+        }
+
+        // 判断是否是网址
+        const isUrl = text && /^(https?:\/\/|www\.)/i.test(text);
+
+        return (
+          <div
+            onClick={(e) => handleCellClick(e, text, record.id, col.key)}
+            style={{
+              cursor: 'pointer',
+              padding: '4px 8px',
+              borderRadius: '4px',
+              minHeight: '24px',
+              transition: 'background-color 0.2s',
+              maxWidth: '180px',
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#F5F5F5'}
+            onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+          >
+            {isUrl ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                <Tooltip title={`${text} (单击复制)`}>
+                  <span
+                    style={{
+                      flex: 1,
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      color: '#1890FF',
+                    }}
+                  >
+                    {text}
+                  </span>
+                </Tooltip>
+                <Tooltip title="打开链接">
+                  <a
+                    href={text.startsWith('http') ? text : `https://${text}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ flexShrink: 0 }}
+                  >
+                    <LinkOutlined style={{ color: '#1890FF', fontSize: '14px' }} />
+                  </a>
+                </Tooltip>
+              </div>
+            ) : (
+              <Tooltip title={text ? `${text} (单击复制，双击编辑)` : '双击编辑'}>
+                <div
+                  style={{
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {text || <span style={{ color: '#BFBFBF' }}>双击编辑</span>}
+                </div>
+              </Tooltip>
+            )}
+          </div>
+        );
+      },
+    };
+    return acc;
+  }, {});
+
+  // 合并所有列配置
+  const allColumnsConfigMerged = { ...allColumnsConfig, ...customColumnsConfig };
+
   // 根据配置的顺序生成列数组
   const columns = [
-    ...getColumnOrder().map((key: string) => allColumnsConfig[key]).filter(Boolean),
+    ...getColumnOrder().map((key: string) => allColumnsConfigMerged[key]).filter(Boolean),
     {
       title: '操作',
       key: 'action',
@@ -1048,48 +1246,94 @@ const Comps = ({ text }: any) => {
 
       {/* 列顺序配置弹窗 */}
       <Modal
-        width={600}
+        width={700}
         open={columnConfigOpen}
         destroyOnClose
         onCancel={() => setColumnConfigOpen(false)}
         onOk={onColumnConfigSave}
-        title="列顺序配置"
+        title="列配置管理"
         okText="保存"
         cancelText="取消"
       >
-        <div style={{
-          backgroundColor: '#F5F7FA',
-          borderRadius: '8px',
-          padding: '20px',
-          minHeight: '400px'
-        }}>
-          <div style={{
-            marginBottom: 16,
-            display: 'flex',
-            alignItems: 'center',
-            gap: '8px'
-          }}>
-            <Tag color="#E6F7FF" style={{ color: '#1890FF', border: '1px solid #91D5FF', fontWeight: 500 }}>
-              拖拽调整顺序
-            </Tag>
-            <span style={{ fontSize: '13px', color: '#8C8C8C' }}>
-              操作列始终固定在最右侧
-            </span>
+        {/* 自定义列管理 */}
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 12, fontSize: '14px', fontWeight: 500, color: '#2C3E50' }}>
+            自定义列管理
           </div>
-          <DndContext
-            sensors={sensors}
-            collisionDetection={closestCenter}
-            onDragEnd={handleDragEnd}
-          >
-            <SortableContext
-              items={columnOrder}
-              strategy={verticalListSortingStrategy}
+          <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+            <Input
+              placeholder="输入列名称"
+              value={newColumnTitle}
+              onChange={(e) => setNewColumnTitle(e.target.value)}
+              onPressEnter={addCustomColumn}
+              style={{ flex: 1 }}
+            />
+            <Button type="primary" onClick={addCustomColumn}>
+              添加列
+            </Button>
+          </div>
+          {customColumns.length > 0 && (
+            <div style={{
+              backgroundColor: '#FAFAFA',
+              borderRadius: '6px',
+              padding: '12px',
+              border: '1px solid #E8E8E8'
+            }}>
+              <Space wrap>
+                {customColumns.map((col) => (
+                  <Tag
+                    key={col.key}
+                    closable
+                    onClose={() => removeCustomColumn(col.key)}
+                    color="blue"
+                  >
+                    {col.title}
+                  </Tag>
+                ))}
+              </Space>
+            </div>
+          )}
+        </div>
+
+        {/* 列顺序配置 */}
+        <div>
+          <div style={{ marginBottom: 12, fontSize: '14px', fontWeight: 500, color: '#2C3E50' }}>
+            列顺序配置
+          </div>
+          <div style={{
+            backgroundColor: '#F5F7FA',
+            borderRadius: '8px',
+            padding: '20px',
+            minHeight: '300px'
+          }}>
+            <div style={{
+              marginBottom: 16,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}>
+              <Tag color="#E6F7FF" style={{ color: '#1890FF', border: '1px solid #91D5FF', fontWeight: 500 }}>
+                拖拽调整顺序
+              </Tag>
+              <span style={{ fontSize: '13px', color: '#8C8C8C' }}>
+                操作列始终固定在最右侧
+              </span>
+            </div>
+            <DndContext
+              sensors={sensors}
+              collisionDetection={closestCenter}
+              onDragEnd={handleDragEnd}
             >
-              {columnOrder.map((key) => (
-                <SortableItem key={key} id={key} />
-              ))}
-            </SortableContext>
-          </DndContext>
+              <SortableContext
+                items={columnOrder}
+                strategy={verticalListSortingStrategy}
+              >
+                {columnOrder.map((key) => (
+                  <SortableItem key={key} id={key} />
+                ))}
+              </SortableContext>
+            </DndContext>
+          </div>
         </div>
       </Modal>
     </div>
