@@ -13,7 +13,7 @@ import {
   Tag,
   Space,
 } from "antd";
-import { BulbOutlined, PlusOutlined, DeleteOutlined } from "@ant-design/icons";
+import { BulbOutlined, PlusOutlined, DeleteOutlined, HolderOutlined } from "@ant-design/icons";
 import styles from "./index.module.css";
 import { copyToClipboard, guid } from "@/utils";
 import dayjs from "dayjs";
@@ -21,6 +21,23 @@ import "dayjs/locale/zh-cn";
 import _, { isEmpty } from 'lodash'
 import { getBranch } from "@/service/getBranch";
 import { getModels } from "@/apis/chat";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from '@dnd-kit/core';
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 // 确保dayjs使用中文
 dayjs.locale('zh-cn');
@@ -53,6 +70,8 @@ const Comps = ({ text }: any) => {
   const [modelList, setModelList] = useState<Array<{ id: string; description: string }>>([]);
   const [selectedModel, setSelectedModel] = useState<string>('');
   const [loadingModels, setLoadingModels] = useState(false);
+  const [columnOrder, setColumnOrder] = useState<string[]>([]);
+  const [columnConfigOpen, setColumnConfigOpen] = useState(false);
 
   useEffect(() => {
     const localDatabase = JSON.parse(safeLocalStorage.getItem("todoList") || "[]");
@@ -125,6 +144,7 @@ const Comps = ({ text }: any) => {
         ...formData,
         id: guid(),
         createAt: new Date(),
+        releaseStatus: formData.releaseStatus || '待开发', // 设置默认值
       };
       setDatabase((data) => [newItem, ...data]);
     } else if (type === "edit") {
@@ -153,6 +173,16 @@ const Comps = ({ text }: any) => {
     setPortList(ports);
     setSelectedModel(localConfig.model || '');
 
+    // 读取列顺序配置
+    const savedColumnOrder = localConfig.columnOrder || [];
+    if (savedColumnOrder.length > 0) {
+      setColumnOrder(savedColumnOrder);
+    } else {
+      // 初始化默认列顺序
+      const defaultOrder = ['index', 'title', 'description', 'releaseDate', 'releaseStatus', 'releasePort', 'preReleaseConfig', 'createAt'];
+      setColumnOrder(defaultOrder);
+    }
+
     // 先打开弹窗
     setConfigOpen(true);
 
@@ -176,6 +206,7 @@ const Comps = ({ text }: any) => {
     const configData = {
       ...configForm.getFieldsValue(),
       portList: portList,
+      columnOrder: columnOrder,
       ...(selectedModel ? { model: selectedModel } : {}),
     };
     // 保存到本地存储
@@ -195,6 +226,64 @@ const Comps = ({ text }: any) => {
 
   const removePort = (port: string) => {
     setPortList(portList.filter(p => p !== port));
+  };
+
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      setColumnOrder((items) => {
+        const oldIndex = items.indexOf(active.id as string);
+        const newIndex = items.indexOf(over.id as string);
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  };
+
+  const onColumnConfig = () => {
+    // 读取列顺序配置
+    const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
+    const savedColumnOrder = localConfig.columnOrder || [];
+    if (savedColumnOrder.length > 0) {
+      setColumnOrder(savedColumnOrder);
+    } else {
+      // 初始化默认列顺序
+      const defaultOrder = ['index', 'title', 'description', 'releaseDate', 'releaseStatus', 'releasePort', 'preReleaseConfig', 'createAt'];
+      setColumnOrder(defaultOrder);
+    }
+    setColumnConfigOpen(true);
+  };
+
+  const onColumnConfigSave = () => {
+    // 读取现有配置
+    const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
+    // 更新列顺序
+    localConfig.columnOrder = columnOrder;
+    // 保存回localStorage
+    safeLocalStorage.setItem("todoConfig", JSON.stringify(localConfig));
+    setColumnConfigOpen(false);
+    message.success("列顺序配置保存成功");
+  };
+
+  const getColumnTitle = (key: string) => {
+    const titleMap: Record<string, string> = {
+      index: 'id',
+      title: '需求标题',
+      description: '分支名称',
+      releaseDate: '发布计划',
+      releaseStatus: '发布状态',
+      releasePort: '发布端口',
+      preReleaseConfig: '发布前配置',
+      createAt: '创建时间',
+    };
+    return titleMap[key] || key;
   };
 
   const onGenerateBranch = async () => {
@@ -227,8 +316,20 @@ const Comps = ({ text }: any) => {
     }
   };
 
-  const columns = [
-    {
+  // 获取列顺序配置
+  const getColumnOrder = () => {
+    const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
+    const savedOrder = localConfig.columnOrder || [];
+    if (savedOrder.length > 0) {
+      return savedOrder;
+    }
+    // 默认顺序
+    return ['index', 'title', 'description', 'releaseDate', 'releaseStatus', 'releasePort', 'preReleaseConfig', 'createAt'];
+  };
+
+  // 定义所有列的配置
+  const allColumnsConfig: Record<string, any> = {
+    index: {
       title: 'id',
       dataIndex: 'index',
       key: 'index',
@@ -237,7 +338,7 @@ const Comps = ({ text }: any) => {
         return database.length - ((currentPage - 1) * pageSize + index);
       },
     },
-    {
+    title: {
       title: '需求标题',
       dataIndex: 'title',
       key: 'title',
@@ -277,7 +378,7 @@ const Comps = ({ text }: any) => {
         record.title?.toString().toLowerCase().includes(value.toString().toLowerCase()),
       render: (text: string, record: any) => (
         <Tooltip title={text}>
-          <span 
+          <span
             className={styles.title}
             onClick={() => onCopy(text)}
           >
@@ -286,7 +387,7 @@ const Comps = ({ text }: any) => {
         </Tooltip>
       ),
     },
-    {
+    description: {
       title: '分支名称',
       dataIndex: 'description',
       key: 'description',
@@ -332,7 +433,7 @@ const Comps = ({ text }: any) => {
         </Tooltip>
       ),
     },
-    {
+    releaseDate: {
       title: '发布计划',
       dataIndex: 'releaseDate',
       key: 'releaseDate',
@@ -376,15 +477,15 @@ const Comps = ({ text }: any) => {
       ),
       onFilter: (value: any, record: any) => {
         if (!record.releaseDate || !value || !Array.isArray(value)) return true;
-        
+
         const recordDate = dayjs(record.releaseDate);
         if (!recordDate.isValid()) return false;
-        
+
         const [startDate, endDate] = value;
         const start = dayjs(startDate);
         const end = dayjs(endDate);
-        
-        return (recordDate.isAfter(start.subtract(1, 'day')) || recordDate.isSame(start, 'day')) && 
+
+        return (recordDate.isAfter(start.subtract(1, 'day')) || recordDate.isSame(start, 'day')) &&
                (recordDate.isBefore(end.add(1, 'day')) || recordDate.isSame(end, 'day'));
       },
       render: (text: any) => {
@@ -397,7 +498,72 @@ const Comps = ({ text }: any) => {
         );
       },
     },
-    {
+    releaseStatus: {
+      title: '发布状态',
+      dataIndex: 'releaseStatus',
+      key: 'releaseStatus',
+      width: 100,
+      filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => {
+        const statusList = ['待开发', '开发中', '待测试', '测试中', '待发布', '已发布'];
+
+        return (
+          <div style={{ padding: 8 }}>
+            <Select
+              placeholder="选择发布状态"
+              value={selectedKeys[0]}
+              onChange={(value) => setSelectedKeys(value ? [value] : [])}
+              style={{ marginBottom: 8, display: 'block', width: '100%' }}
+              allowClear
+            >
+              {statusList.map((status: string) => (
+                <Select.Option key={status} value={status}>
+                  {status}
+                </Select.Option>
+              ))}
+            </Select>
+            <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+              <Button
+                type="primary"
+                onClick={() => confirm()}
+                size="small"
+                style={{ width: 90 }}
+              >
+                筛选
+              </Button>
+              <Button
+                onClick={() => {
+                  clearFilters();
+                  confirm();
+                }}
+                size="small"
+                style={{ width: 90 }}
+              >
+                重置
+              </Button>
+            </div>
+          </div>
+        );
+      },
+      onFilter: (value: any, record: any) => {
+        return record.releaseStatus === value;
+      },
+      render: (text: string) => {
+        if (!text) return <Tag>待开发</Tag>;
+
+        // 根据状态显示不同颜色
+        const colorMap: Record<string, string> = {
+          '待开发': 'default',
+          '开发中': 'blue',
+          '待测试': 'orange',
+          '测试中': 'cyan',
+          '待发布': 'purple',
+          '已发布': 'green',
+        };
+
+        return <Tag color={colorMap[text] || 'default'}>{text}</Tag>;
+      },
+    },
+    releasePort: {
       title: '发布端口',
       dataIndex: 'releasePort',
       key: 'releasePort',
@@ -405,7 +571,7 @@ const Comps = ({ text }: any) => {
       filterDropdown: ({ setSelectedKeys, selectedKeys, confirm, clearFilters }: any) => {
         const localConfig = JSON.parse(safeLocalStorage.getItem("todoConfig") || "{}");
         const portList = localConfig.portList || ["3000", "8080", "9000"];
-        
+
         return (
           <div style={{ padding: 8 }}>
             <Select
@@ -446,18 +612,18 @@ const Comps = ({ text }: any) => {
       },
       onFilter: (value: any, record: any) => {
         if (!record.releasePort || !value) return true;
-        
+
         // 处理多选端口的筛选
         if (Array.isArray(record.releasePort)) {
           return record.releasePort.includes(value);
         }
-        
+
         // 兼容旧的单选格式
         return record.releasePort === value;
       },
       render: (text: any) => {
         if (!text) return '-';
-        
+
         // 处理多选端口的显示
         if (Array.isArray(text)) {
           const displayText = text.join(', ');
@@ -473,7 +639,7 @@ const Comps = ({ text }: any) => {
             </Tooltip>
           );
         }
-        
+
         // 兼容旧的单选格式
         return (
           <Tooltip title={text}>
@@ -484,7 +650,7 @@ const Comps = ({ text }: any) => {
         );
       },
     },
-    {
+    preReleaseConfig: {
       title: '发布前配置',
       dataIndex: 'preReleaseConfig',
       key: 'preReleaseConfig',
@@ -533,7 +699,7 @@ const Comps = ({ text }: any) => {
         );
       },
     },
-    {
+    createAt: {
       title: '创建时间',
       dataIndex: 'createAt',
       key: 'createAt',
@@ -584,6 +750,11 @@ const Comps = ({ text }: any) => {
         );
       },
     },
+  };
+
+  // 根据配置的顺序生成列数组
+  const columns = [
+    ...getColumnOrder().map((key: string) => allColumnsConfig[key]).filter(Boolean),
     {
       title: '操作',
       key: 'action',
@@ -617,6 +788,43 @@ const Comps = ({ text }: any) => {
   //     });
   // },[])
 
+  // 可拖拽的列项组件
+  const SortableItem = ({ id }: { id: string }) => {
+    const {
+      attributes,
+      listeners,
+      setNodeRef,
+      transform,
+      transition,
+      isDragging,
+    } = useSortable({ id });
+
+    const style = {
+      transform: CSS.Transform.toString(transform),
+      transition,
+      opacity: isDragging ? 0.5 : 1,
+      backgroundColor: '#ffffff',
+      border: '1px solid #D1D9E6',
+      borderRadius: '8px',
+      padding: '12px 16px',
+      marginBottom: '8px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      cursor: 'grab',
+      boxShadow: isDragging ? '0 4px 12px rgba(24, 144, 255, 0.15)' : '0 1px 3px rgba(0, 0, 0, 0.08)',
+    };
+
+    return (
+      <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <HolderOutlined style={{ color: '#1890FF', fontSize: '16px' }} />
+          <span style={{ color: '#2C3E50', fontWeight: 500 }}>{getColumnTitle(id)}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div>
       <div className={styles.operation}>
@@ -625,6 +833,9 @@ const Comps = ({ text }: any) => {
         </Button>
         <Button onClick={onConfig} style={{ marginLeft: 8 }}>
           配置
+        </Button>
+        <Button onClick={onColumnConfig} style={{ marginLeft: 8 }}>
+          列配置
         </Button>
       </div>
       <div className={styles.list}>
@@ -685,11 +896,21 @@ const Comps = ({ text }: any) => {
             <Input placeholder="请输入分支名称" />
           </Form.Item>
           <Form.Item name="releaseDate" label="发布计划">
-            <DatePicker 
-              placeholder="请选择发布日期" 
+            <DatePicker
+              placeholder="请选择发布日期"
               style={{ width: '100%' }}
               format="YYYY-MM-DD"
             />
+          </Form.Item>
+          <Form.Item name="releaseStatus" label="发布状态" initialValue="待开发">
+            <Select placeholder="请选择发布状态" style={{ width: '100%' }}>
+              <Select.Option value="待开发">待开发</Select.Option>
+              <Select.Option value="开发中">开发中</Select.Option>
+              <Select.Option value="待测试">待测试</Select.Option>
+              <Select.Option value="测试中">测试中</Select.Option>
+              <Select.Option value="待发布">待发布</Select.Option>
+              <Select.Option value="已发布">已发布</Select.Option>
+            </Select>
           </Form.Item>
           <Form.Item name="releasePort" label="发布端口">
             <Select 
@@ -823,6 +1044,53 @@ const Comps = ({ text }: any) => {
             </div>
           </Form.Item>
         </Form>
+      </Modal>
+
+      {/* 列顺序配置弹窗 */}
+      <Modal
+        width={600}
+        open={columnConfigOpen}
+        destroyOnClose
+        onCancel={() => setColumnConfigOpen(false)}
+        onOk={onColumnConfigSave}
+        title="列顺序配置"
+        okText="保存"
+        cancelText="取消"
+      >
+        <div style={{
+          backgroundColor: '#F5F7FA',
+          borderRadius: '8px',
+          padding: '20px',
+          minHeight: '400px'
+        }}>
+          <div style={{
+            marginBottom: 16,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '8px'
+          }}>
+            <Tag color="#E6F7FF" style={{ color: '#1890FF', border: '1px solid #91D5FF', fontWeight: 500 }}>
+              拖拽调整顺序
+            </Tag>
+            <span style={{ fontSize: '13px', color: '#8C8C8C' }}>
+              操作列始终固定在最右侧
+            </span>
+          </div>
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={columnOrder}
+              strategy={verticalListSortingStrategy}
+            >
+              {columnOrder.map((key) => (
+                <SortableItem key={key} id={key} />
+              ))}
+            </SortableContext>
+          </DndContext>
+        </div>
       </Modal>
     </div>
   );
